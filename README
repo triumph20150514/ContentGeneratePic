@@ -1,1 +1,100 @@
-##仿简书分享内容生成图片功能
+```
+  #仿简书分享内容生成图片功能
+
+```
+
+
+
+
+
+
+```
+2.webView截屏
+第一种方式
+```
+```
+通过调用webview.capturePicture(),得到一个picture对象，根据图像的宽和高创建一个Bitmap,再创建一个canvas，绑定bitmap，最后用picture去绘制。
+````
+```
+//获取Picture对象
+Picture picture = wv_capture.capturePicture();
+//得到图片的宽和高（没有reflect图片内容）
+int width = picture.getWidth();
+int height = picture.getHeight();
+if (width > 0 && height > 0) {
+    //创建位图
+    Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+    Canvas canvas = new Canvas(bitmap);
+    //绘制(会调用native方法，完成图形绘制)
+    picture.draw(canvas);
+
+}
+````
+````
+这种方式可以获取webview中已加载的所有数据图像，也就是长截屏的效果。这种方式在Android 4.4以下是没有问题的，但是在5.0以上就行不通了。capturePicture()方法在4.4中废弃掉了，官方建议使用onDrow()方法来获取webview的bitmap快照。具体实现如下：
+
+//获取webview缩放率
+float scale = wv_capture.getScale();
+//得到缩放后webview内容的高度
+int webViewHeight = (int) (wv_capture.getContentHeight()*scale);
+Bitmap bitmap = Bitmap.createBitmap(wv_capture.getWidth(),webViewHeight, Bitmap.Config.ARGB_8888);
+Canvas canvas = new Canvas(bitmap);
+//绘制
+wv_capture.draw(canvas);
+
+但是此时在5.0+上会发现，截取的快照只显示了webview中显示出来的那部分，没有显示出来的部分是空白的。
+通过google找到了原因，在5.0+版本上，Android对webview做了优化，旨在减少内存占用以提高性能。因此在默认情况下会智能的绘制html中需要绘制的部分，
+其实就是当前屏幕展示的html内容，因此会出现未显示的图像是空白的。解决办法是调用enableSlowWholeDocumentDraw()方法。这个方法需要在webview创建之前调用，
+在Activity里就是在setContentView前去调用，此方法会有显著的性能开销。
+
+这里需要注意的是在传递webview的高度时,是通过缩放率计算的，这样就会算出绘制整个已加载的html内容所需的高度。如果没有这个缩放率,
+那么得到的快照就仅仅是这个html内容最上面的那一段。还有一个问题就是在5.0+系统上得到快照比较模糊,在其他版本上没有问题，不知道原因何在?
+
+
+ ##第二種 過去webView解剖圖 和普通View獲取截圖方式一樣 先開槍緩存功能 然後過去位圖
+      webView.setDrawingCacheEnabled(true);
+             webView.getDrawingCache();
+
+ ## 第三中
+ 比较简单,通过获取当前window的DecorView,然后绘制Bitmap对象。
+
+ View view  = context.getWindow().getDecorView();
+ Bitmap bitmap = Bitmap.createBitmap(view.getWidth(), view.getHeight(), Bitmap.Config.ARGB_8888);
+ Canvas canvas = new Canvas(bitmap);
+ view.draw(canvas);
+---------
+
+
+
+
+
+
+文／littleKang（简书作者）
+原文链接：http://www.jianshu.com/p/d0ef41470586
+著作权归作者所有，转载请联系作者获得授权，并标注“简书作者”。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+願望地址 ：https://github.com/zhangke3016/GeneratePicture
+webview截屏：http://www.jianshu.com/p/d0ef41470586

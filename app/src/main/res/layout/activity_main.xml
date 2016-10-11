@@ -11,11 +11,14 @@
     tools:context="com.trimph.generatepic.MainActivity">
 
     <TextView
+        android:id="@+id/Tv"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Hello World!" />
+        android:textSize="22sp"
+        android:text="生成图片" />
     <WebView
         android:id="@+id/webview"
+        android:layout_below="@id/Tv"
         android:layout_width="match_parent"
         android:layout_height="match_parent"></WebView>
 
